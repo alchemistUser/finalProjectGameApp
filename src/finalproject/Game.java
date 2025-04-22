@@ -629,6 +629,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
         int textX = GAME_WIDTH / 2 - g.getFontMetrics().stringWidth(stopwatchText) / 2;
         int textY = 40; // Position near the top of the screen
         g.drawString(stopwatchText, textX, textY);
+
     }
 
     @Override
@@ -763,6 +764,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
                 {
                     put("Back To Menu", new Rectangle(445, 441, 187, 36));
                     put("Reset", new Rectangle(650, 442, 185, 36));
+                    put("Unpause", new Rectangle(540, 370, 185, 36)); // New "Unpause" button
                 }
             };
             // hehehehehehehe
@@ -790,6 +792,9 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
                         window.validate();
                     } else if (buttonName.equals("Reset")) {
                         resetLevel();
+                    } else if (buttonName.equals("Unpause")) {
+                        resetLevelMenuPrompt = false; // Close the pause menu
+                        resumeTimer(); // Resume the stopwatch timer
                     }
                 }
             }
