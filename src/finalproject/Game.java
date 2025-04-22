@@ -839,8 +839,10 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
     }
 
     private void save() {
+        System.out.println("Saving Successful");
         if (stmt == null) {
             System.out.println("Database statement is null. Unable to save.");
+            System.out.println("Saving Unuccessful");
             return;
         }
 
@@ -850,6 +852,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
                     + player.name + "', '" + player.difficulty + "', 1, 2, 1, 3, " + player.coins + ", " + player.smallPotion + ", " + player.mediumPotion + ", " + player.bigPotion + ", " + player.speedPotion + ", " + player.goldenBanana + ", " + player.currentLevelProgress + ")");
         } catch (SQLException SQLError) {
             System.out.println("Unable to execute statement!");
+            System.out.println("Saving Unuccessful");
             SQLError.printStackTrace();
         }
     }

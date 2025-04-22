@@ -406,6 +406,7 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
             return;
         
         try {
+            System.out.println("Loading characters");
             characters.clear();
             ResultSet rs = stmt.executeQuery("SELECT * FROM characters");
             while (rs.next()) {
@@ -429,6 +430,7 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
                 characters.add(character);
             }
         } catch (SQLException e) {
+            System.out.println("Failed loading of characters");
             e.printStackTrace();
             return;
         }
