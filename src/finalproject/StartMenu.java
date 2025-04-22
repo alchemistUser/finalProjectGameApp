@@ -353,35 +353,53 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
             }
         }
 
-        // Load character datas
+        // Load character data
         int scaledWidth = (int) (character_image.getWidth() * 0.7 / 7);
         int scaledHeight = (int) (character_image.getHeight() * 0.7);
         for (int i = 0; i < characters.size(); i++) {
+            Character character = characters.get(i); // Get the current character
             int yOffset = i * 128;
+
+            // Draw background box for character data
             g.setColor(new Color(57, 65, 108));
             g.fillRect(523, 76 + yOffset, 227, 75);
 
+            // Draw character image
             g.drawImage(character_image.getSubimage(animationOffset * 74, 0, 74, 120), 378,
                     50 + scaledHeight / 2 + yOffset,
                     scaledWidth, scaledHeight, this);
+
+            // Draw character name
             g.setFont(customFont.deriveFont(10f));
             g.setColor(new Color(228, 229, 231));
-            g.drawString(characters.get(i).name, 450, 70 + yOffset);
+            g.drawString(character.name, 450, 70 + yOffset);
 
             // Character Summary Data
             g.drawImage(load_game_character_data_image, 480, 68 + yOffset, this);
-            helperMethods.drawCenteredString(g, "Level: " + characters.get(i).level, new Rectangle(480, 80 + yOffset, 138, 73), customFont.deriveFont(10f));
-            if (characters.get(i).difficulty.equals("Easy")) {
+
+            // Draw Level
+            helperMethods.drawCenteredString(g, "Level: " + character.level, new Rectangle(480, 80 + yOffset, 138, 73), customFont.deriveFont(10f));
+
+            // Draw Difficulty
+            if (character.difficulty.equals("Easy")) {
                 g.setColor(Color.green);
-            } else if (characters.get(i).difficulty.equals("Normal")) {
+            } else if (character.difficulty.equals("Normal")) {
                 g.setColor(Color.yellow);
             } else {
                 g.setColor(Color.red);
             }
-            helperMethods.drawCenteredString(g, characters.get(i).difficulty, new Rectangle(480, 100 + yOffset, 138, 73), customFont.deriveFont(10f));
+            helperMethods.drawCenteredString(g, character.difficulty, new Rectangle(480, 100 + yOffset, 138, 73), customFont.deriveFont(10f));
+
+            // Draw Progress Level
             g.setColor(new Color(82, 113, 255));
-            helperMethods.drawCenteredString(g, "Level: " + characters.get(i).currentLevelProgress,
+            helperMethods.drawCenteredString(g, "Progress: " + character.currentLevelProgress,
                     new Rectangle(645, 80 + yOffset, 174, 92), customFont.deriveFont(10f));
+
+            // Draw Saved Time
+            g.setColor(new Color(255, 255, 255)); // White color for visibility
+            String formattedTime = formatTime(character.timer); // Format the timer value
+            helperMethods.drawCenteredString(g, "Time: " + formattedTime,
+                    new Rectangle(645, 100 + yOffset, 174, 92), customFont.deriveFont(10f));
 
             // Delete and Play Buttons
             g.drawImage(load_game_buttons_image, 364 + 545 - load_game_buttons_image.getWidth() - 20,
@@ -439,8 +457,10 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
                 int speedp = rs.getInt("speedPotion");
                 int goldenbanana = rs.getInt("goldenBanana");
                 int lp = rs.getInt("level_progress");
+                long timer = rs.getLong("timer"); // Retrieve the timer value
 
                 Character character = new Character(rect, name, d, lvl, s, a, v, c, smallp, mediump, bigp, speedp, goldenbanana, lp);
+                character.timer = timer; // Initialize the timer value
                 characters.add(character);
             }
         } catch (SQLException e) {
@@ -541,5 +561,11 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private String formatTime(long millis) {
+        int minutes = (int) (millis / 60000); // Convert milliseconds to minutes
+        int seconds = (int) ((millis % 60000) / 1000); // Convert remaining milliseconds to seconds
+        return String.format("%02d:%02d", minutes, seconds); // Format as MM:SS
     }
 }

@@ -100,7 +100,14 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
     private Statement stmt;
     private Point mouse_pos = new Point(0, 0);
 
+    //timer
+    private long startTime; // Tracks when the stopwatch starts
+    private long elapsedTime; // Tracks the total elapsed time
+    private boolean isTimerRunning = true; // Controls whether the stopwatch is active    
+
     public Game(JFrame window, Character player, Statement stmt, Font cf, Settings settings) {
+
+        this.startTime = System.currentTimeMillis() - player.timer; // Initialize the stopwatch with the saved timer value
 
         this.stmt = stmt;
         this.player = player;
@@ -129,6 +136,24 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
         // this timer will call the actionPerformed() method every DELAY ms
         timer = new Timer(DELAY, this);
         timer.start();
+    }
+
+    //for timer
+    private String formatTime(long millis) {
+        int minutes = (int) (millis / 60000); // Convert milliseconds to minutes
+        int seconds = (int) ((millis % 60000) / 1000); // Convert remaining milliseconds to seconds
+        return String.format("%02d:%02d", minutes, seconds); // Format as MM:SS
+    }
+
+    public void pauseTimer() {
+        isTimerRunning = false;
+    }
+
+    public void resumeTimer() {
+        if (!isTimerRunning) {
+            startTime = System.currentTimeMillis() - elapsedTime; // Adjust start time to account for paused time
+            isTimerRunning = true;
+        }
     }
 
     private void fadeIn(Graphics g) {
@@ -190,6 +215,11 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
 
         // Reset player's coins to zero
         this.player.coins = 0;
+
+        // Reset the stopwatch
+        this.startTime = System.currentTimeMillis();
+        this.elapsedTime = 0;
+        this.isTimerRunning = true;
 
         // Reset potions and other collectibles
         this.player.smallPotion = 0;
@@ -469,6 +499,10 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
             }
         }
 
+        if (isTimerRunning) {
+            elapsedTime = System.currentTimeMillis() - startTime; // Calculate elapsed time in milliseconds
+        }
+
         repaint();
         playSoundEffect();
         tick++;
@@ -562,6 +596,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
             String text = "Press F to enter portal";
             int textX = GAME_WIDTH / 2 - g.getFontMetrics().stringWidth(text) / 2; // Center horizontally
             int textY = GAME_HEIGHT - 50; // Position near the bottom of the screen
+
             g.drawString(text, textX, textY);
         }
 
@@ -586,6 +621,14 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
         g.setColor(Color.red);
 
         Toolkit.getDefaultToolkit().sync();
+
+        // Always display the stopwatch
+        g.setFont(customFont.deriveFont(18f)); // Set font size
+        g.setColor(Color.WHITE); // Set text color
+        String stopwatchText = "Time: " + formatTime(elapsedTime);
+        int textX = GAME_WIDTH / 2 - g.getFontMetrics().stringWidth(stopwatchText) / 2;
+        int textY = 40; // Position near the top of the screen
+        g.drawString(stopwatchText, textX, textY);
     }
 
     @Override
@@ -846,8 +889,21 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
 
         try {
             stmt.execute("DELETE FROM characters WHERE name='" + player.name + "'");
-            stmt.execute("INSERT INTO characters(name, difficulty, level, strength, agility, vitality, coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, level_progress) VALUES('"
-                    + player.name + "', '" + player.difficulty + "', 1, " + player.strength + ", " + player.agility + ", " + player.vitality + ", " + player.coins + ", " + player.smallPotion + ", " + player.mediumPotion + ", " + player.bigPotion + ", " + player.speedPotion + ", " + player.goldenBanana + ", " + player.currentLevelProgress + ")");
+            stmt.execute("INSERT INTO characters(name, difficulty, level, strength, agility, vitality, coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, level_progress, timer) VALUES('"
+                    + player.name + "', '"
+                    + player.difficulty + "', "
+                    + player.level + ", "
+                    + player.strength + ", "
+                    + player.agility + ", "
+                    + player.vitality + ", "
+                    + player.coins + ", "
+                    + player.smallPotion + ", "
+                    + player.mediumPotion + ", "
+                    + player.bigPotion + ", "
+                    + player.speedPotion + ", "
+                    + player.goldenBanana + ", "
+                    + player.currentLevelProgress + ", "
+                    + elapsedTime + ")"); // Save the elapsed time
         } catch (SQLException SQLError) {
             System.out.println("Unable to execute statement!");
             SQLError.printStackTrace();
