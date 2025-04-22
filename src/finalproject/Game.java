@@ -839,20 +839,17 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
     }
 
     private void save() {
-        System.out.println("Saving Successful");
         if (stmt == null) {
             System.out.println("Database statement is null. Unable to save.");
-            System.out.println("Saving Unuccessful");
             return;
         }
 
         try {
             stmt.execute("DELETE FROM characters WHERE name='" + player.name + "'");
             stmt.execute("INSERT INTO characters(name, difficulty, level, strength, agility, vitality, coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, level_progress) VALUES('"
-                    + player.name + "', '" + player.difficulty + "', 1, 2, 1, 3, " + player.coins + ", " + player.smallPotion + ", " + player.mediumPotion + ", " + player.bigPotion + ", " + player.speedPotion + ", " + player.goldenBanana + ", " + player.currentLevelProgress + ")");
+                    + player.name + "', '" + player.difficulty + "', 1, " + player.strength + ", " + player.agility + ", " + player.vitality + ", " + player.coins + ", " + player.smallPotion + ", " + player.mediumPotion + ", " + player.bigPotion + ", " + player.speedPotion + ", " + player.goldenBanana + ", " + player.currentLevelProgress + ")");
         } catch (SQLException SQLError) {
             System.out.println("Unable to execute statement!");
-            System.out.println("Saving Unuccessful");
             SQLError.printStackTrace();
         }
     }

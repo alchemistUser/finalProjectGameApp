@@ -420,7 +420,6 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
         }
 
         try {
-            System.out.println("Loading characters");
             characters.clear();
             ResultSet rs = stmt.executeQuery("SELECT * FROM characters");
             while (rs.next()) {
@@ -440,11 +439,11 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
                 int speedp = rs.getInt("speedPotion");
                 int goldenbanana = rs.getInt("goldenBanana");
                 int lp = rs.getInt("level_progress");
+
                 Character character = new Character(rect, name, d, lvl, s, a, v, c, smallp, mediump, bigp, speedp, goldenbanana, lp);
                 characters.add(character);
             }
         } catch (SQLException e) {
-            System.out.println("Failed loading of characters");
             e.printStackTrace();
             return;
         }

@@ -16,30 +16,17 @@ public class main {
     private static Statement stmt = null;
 
     private static void loadDatabase() {
-        final String DRIVER = "com.mysql.jdbc.Driver";
-        final String DB_URL = "jdbc:mysql://localhost/finalproject?serverTimezone=UTC";
-        final String DB_USER = "root";
-        final String DB_PASS = "Hornley23";
+        final String DB_URL = "jdbc:sqlite:src/saves.db"; // Path to the SQLite database file
 
         try {
-            Class.forName(DRIVER);
-        } catch (ClassNotFoundException e) {
-            System.out.println("Unable to load database");
-            e.printStackTrace();
-            return;
-        }
-
-        try {
-            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+            conn = DriverManager.getConnection(DB_URL);
             stmt = conn.createStatement();
+            System.out.println("Successfully connected to SQLite database!");
         } catch (SQLException e) {
-            System.out.println("Unable to connect to database");
+            System.out.println("Unable to connect to SQLite database");
             e.printStackTrace();
-            return;
         }
-        
-        System.out.println("Successfully loaded database!");
-        
+
         try {
             checkCharactersTable(conn, "characters");
         } catch (SQLException e) {
@@ -47,17 +34,30 @@ public class main {
             e.printStackTrace();
         }
     }
-        
+
     private static void checkCharactersTable(Connection conn, String tableName) throws SQLException {
         DatabaseMetaData metaData = conn.getMetaData();
         try (var resultSet = metaData.getTables(null, null, tableName, new String[]{"TABLE"})) {
             if (!resultSet.next()) {
-                System.out.println("No table!");
+                System.out.println("No table! Creating 'characters' table...");
                 stmt.execute("""
-                             CREATE TABLE characters(
-                             id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-                             \tname varchar(255) NOT NULL, difficulty varchar(255) NOT NULL, level INT, strength INT NOT NULL, agility INT NOT NULL, vitality INT NOT NULL, coins INT NOT NULL, smallPotion INT NOT NULL, mediumPotion INT NOT NULL, bigPotion INT NOT NULL, speedPotion INT, goldenBanana INT NOT NULL, level_progress INT NOT NULL
-                             )""");
+                CREATE TABLE characters (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    difficulty TEXT NOT NULL,
+                    level INTEGER,
+                    strength INTEGER NOT NULL,
+                    agility INTEGER NOT NULL,
+                    vitality INTEGER NOT NULL,
+                    coins INTEGER NOT NULL,
+                    smallPotion INTEGER NOT NULL,
+                    mediumPotion INTEGER NOT NULL,
+                    bigPotion INTEGER NOT NULL,
+                    speedPotion INTEGER,
+                    goldenBanana INTEGER NOT NULL,
+                    level_progress INTEGER NOT NULL
+                )
+            """);
             } else {
                 System.out.println("Yes table!");
             }
