@@ -4,7 +4,7 @@ public final class Constants {
     private Constants() {
     }
     
-    public final static boolean testing = true;
+    public final static boolean testing = false;
     public final static boolean showHitbox = false;
     
     public final static int GAME_WIDTH = 1280;

@@ -2,10 +2,7 @@ package finalproject;
 
 import java.awt.Dimension;
 import javax.swing.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
 import java.io.Serializable;
 
@@ -39,6 +36,31 @@ public class main {
             System.out.println("Unable to connect to database");
             e.printStackTrace();
             return;
+        }
+        
+        System.out.println("Successfully loaded database!");
+        
+        try {
+            checkCharactersTable(conn, "characters");
+        } catch (SQLException e) {
+            System.out.println("Unable to execute statement!");
+            e.printStackTrace();
+        }
+    }
+        
+    private static void checkCharactersTable(Connection conn, String tableName) throws SQLException {
+        DatabaseMetaData metaData = conn.getMetaData();
+        try (var resultSet = metaData.getTables(null, null, tableName, new String[]{"TABLE"})) {
+            if (!resultSet.next()) {
+                System.out.println("No table!");
+                stmt.execute("""
+                             CREATE TABLE characters(
+                             id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+                             \tname varchar(255) NOT NULL, difficulty varchar(255) NOT NULL, level INT, strength INT NOT NULL, agility INT NOT NULL, vitality INT NOT NULL, coins INT NOT NULL, smallPotion INT NOT NULL, mediumPotion INT NOT NULL, bigPotion INT NOT NULL, speedPotion INT, goldenBanana INT NOT NULL, level_progress INT NOT NULL
+                             )""");
+            } else {
+                System.out.println("Yes table!");
+            }
         }
     }
 
