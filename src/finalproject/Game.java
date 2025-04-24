@@ -670,7 +670,14 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
         }
 
         if (key == KeyEvent.VK_ESCAPE) {
-            resetLevelMenuPrompt = true;
+            if (resetLevelMenuPrompt == false) {
+                resetLevelMenuPrompt = true;
+                pauseTimer();
+            } else {
+                resetLevelMenuPrompt = false; // Close the pause menu
+                resumeTimer(); // Resume the stopwatch timer
+            }
+            pause = resetLevelMenuPrompt;
         }
 
         if (gameOver) {
@@ -764,7 +771,6 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
                 {
                     put("Back To Menu", new Rectangle(445, 441, 187, 36));
                     put("Reset", new Rectangle(650, 442, 185, 36));
-                    put("Unpause", new Rectangle(540, 370, 185, 36)); // New "Unpause" button
                 }
             };
             // hehehehehehehe
@@ -792,9 +798,6 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
                         window.validate();
                     } else if (buttonName.equals("Reset")) {
                         resetLevel();
-                    } else if (buttonName.equals("Unpause")) {
-                        resetLevelMenuPrompt = false; // Close the pause menu
-                        resumeTimer(); // Resume the stopwatch timer
                     }
                 }
             }
