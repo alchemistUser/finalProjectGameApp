@@ -31,6 +31,7 @@ Easy - 1x enemy hp and 1x rewards
 Normal - 2x enemy hp and 2x rewards
 Hard - 3x enemy hp and 4x rewards
  */
+
 public class Game extends JPanel implements ActionListener, KeyListener, MouseMotionListener, MouseListener {
 
     // controls the delay between each tick in ms
@@ -694,7 +695,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
             player.jump = true;
         } else if (key == KeyEvent.VK_T) {
             player.attack = true;
-        } else if (key == KeyEvent.VK_F && nearPortal) {
+        } else if (key == KeyEvent.VK_F) {
             player.interact = true;
         } else if (key == KeyEvent.VK_1) {
             if (player.smallPotion > 0 && player.health < player.max_health) {
