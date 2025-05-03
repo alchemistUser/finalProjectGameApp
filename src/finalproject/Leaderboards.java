@@ -23,7 +23,6 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
     private Point mouse_pos = new Point(0, 0);
     private Timer timer;
     private ArrayList<Character> characters; // List of saved characters (for leaderboard data)
-    private java.util.List<String> leaderboardText = new ArrayList<>();
     private HashMap<String, Rectangle> buttons = new HashMap<>();
     private Statement stmt; // Class-level declaration of stmt
 
@@ -34,15 +33,14 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         // Load images
         leaderboard_ui_image = HelperMethods.loadLeaderboardBackgroundImage();
 
-        // Initialize buttons
-        buttons.put("Back", new Rectangle(25, 25, 258, 51)); // Back button
-        buttons.put("Time", new Rectangle(900, 250, 200, 40)); // Time button
-        buttons.put("Level", new Rectangle(900, 300, 200, 40)); // Level button
-        buttons.put("Score", new Rectangle(900, 350, 200, 40)); // Score button
+        // Initialize buttons with improved alignment
+        buttons.put("Back", new Rectangle(25, 25, 200, 50)); // Back button at the top-left
+        buttons.put("Time", new Rectangle(930, 230, 320, 75)); // Time button on the right
+        buttons.put("Level", new Rectangle(930, 323, 320, 75)); // Level button below "Time"
+        buttons.put("Score", new Rectangle(930, 416, 320, 75)); // Score button below "Level"
 
         // Load saved characters from the database
         characters = loadEntriesFromDatabase(stmt, "characters");
-        updateLeaderboardText(); // Precompute leaderboard text
 
         // Set up the panel
         setPreferredSize(new Dimension(Constants.GAME_WIDTH, Constants.GAME_HEIGHT));
@@ -61,11 +59,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                 System.out.println("Database statement or connection is invalid. Unable to load entries.");
                 return entries;
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(Leaderboards.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
-        try {
             ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName + " ORDER BY score DESC"
                     + (tableName.equals("leaderboards") ? " LIMIT 10" : ""));
             while (rs.next()) {
@@ -82,7 +76,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                 int speedPotion = rs.getInt("speedPotion");
                 int goldenBanana = rs.getInt("goldenBanana");
                 int levelProgress = rs.getInt("level_progress");
-                long timer = rs.getLong("timer");
+                long timer = rs.getLong("timer"); // Load the timer value
                 int score = rs.getInt("score");
 
                 // Create a Character object for leaderboard display
@@ -90,7 +84,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                         new Rectangle(0, 0, 74, 107), name, difficulty, level, strength, agility, vitality,
                         coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, levelProgress
                 );
-                entry.timer = timer;
+                entry.timer = timer; // Set the timer value
                 entry.score = score;
                 entries.add(entry);
             }
@@ -101,15 +95,6 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         }
 
         return entries;
-    }
-
-    private void updateLeaderboardText() {
-        leaderboardText.clear();
-        for (int i = 0; i < characters.size(); i++) {
-            Character character = characters.get(i);
-            leaderboardText.add(String.format("%d. %s - Level %d - %s - %d Coins - Score: %d",
-                    i + 1, character.name, character.level, character.difficulty, character.coins, character.score));
-        }
     }
 
     @Override
@@ -130,11 +115,27 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.setColor(Color.WHITE);
         int yOffset = 150; // Starting vertical position for leaderboard entries
-        for (String entry : leaderboardText) {
+        for (int i = 0; i < characters.size(); i++) {
+            Character character = characters.get(i);
+            String formattedTime = String.format("%02d:%02d:%02d",
+                    character.timer / 3600000, // Hours
+                    (character.timer % 3600000) / 60000, // Minutes
+                    (character.timer % 60000) / 1000); // Seconds
+
+            String entry = String.format("%d. %s - Level %d - %s - %d Coins - Score: %d - Time: %s",
+                    i + 1, character.name, character.level, character.difficulty, character.coins, character.score, formattedTime);
             g.drawString(entry, 300, yOffset);
             yOffset += 30; // Adjust spacing between entries
         }
+
     }
+    HashMap<String, Comparator<Character>> sortCriteria = new HashMap<>() {
+        {
+            put("Time", Comparator.comparingLong(c -> c.timer));
+            put("Level", Comparator.comparingInt(c -> c.level));
+            put("Score", Comparator.comparingInt(c -> c.score));
+        }
+    };
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -168,9 +169,31 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                     window.validate();
                     window.requestFocusInWindow(); // Request focus for the StartMenu
                     StartMenu.currentScreen = "Start"; // Reset the screen state
+                } else if (buttonName.equals("Time")) {
+                    System.out.println("Time Sort");
+                    srtTime();
+                } else if (buttonName.equals("Level")) {
+                    System.out.println("Level Sort");
+                    srtLevel();
+                } else if (buttonName.equals("Score")) {
+                    System.out.println("Score Sort");
+                    srtScore();
                 }
             }
         }
+    }
+    
+    // Algorithm for Time Sort
+    private void srtTime(){
+        System.out.println("please implement time sort here");
+    }
+    // Algorithm for Level Sort
+    private void srtLevel(){
+        System.out.println("please implement level sort here");
+    }
+    // Algorithm for Score Sort
+    private void srtScore(){
+        System.out.println("please implement score sort here");
     }
 
     @Override
