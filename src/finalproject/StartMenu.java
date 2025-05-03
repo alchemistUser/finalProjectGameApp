@@ -46,7 +46,7 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
 
     private final int DELAY = 25;
     private Timer timer;
-    private Vector button_names = new Vector(Arrays.asList("New Game", "Load Game", "Settings"));
+    private Vector button_names = new Vector(Arrays.asList("New Game", "Load Game", "Settings", "Leaderboards"));
     private Font customFont;
 
     private HashMap<String, Point> button_pos = new HashMap();
@@ -117,6 +117,16 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
             newGameScreen(g);
         } else if (this.currentScreen.equals("LOAD GAME")) {
             loadGameScreen(g);
+        } else if (this.currentScreen.equals("Leaderboards")) {
+            // Open the Leaderboards screen
+            window.removeMouseListener(this);
+            window.removeMouseMotionListener(this);
+            Leaderboards leaderboards = new Leaderboards(window, stmt); // Pass the `stmt` object
+            window.add(leaderboards);
+            window.addMouseListener(leaderboards);
+            window.addMouseMotionListener(leaderboards);
+            window.remove(this);
+            window.validate();
         } else {
             settingsScreen(g);
         }
@@ -148,6 +158,16 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
                     } else if (buttonName.equals("Load Game")) {
                         loadCharacters();
                         this.currentScreen = "LOAD GAME";
+                    } else if (buttonName.equals("Leaderboards")) {
+                        // Open the Leaderboards screen
+                        window.removeMouseListener(this);
+                        window.removeMouseMotionListener(this);
+                        Leaderboards leaderboards = new Leaderboards(window, stmt); // Pass the `stmt` object
+                        window.add(leaderboards);
+                        window.addMouseListener(leaderboards);
+                        window.addMouseMotionListener(leaderboards);
+                        window.remove(this);
+                        window.validate();
                     } else {
                         this.currentScreen = "Settings-audio";
                     }
@@ -338,74 +358,79 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
         g.drawString(typing, 530, 260);
     }
 
-    private void loadGameScreen(Graphics g) {
-        g.drawImage(load_game_image, 0, 0, this);
+private void loadGameScreen(Graphics g) {
+    g.drawImage(load_game_image, 0, 0, this);
 
-        if (frame % 4 == 0) {
-            animate = true;
-        }
+    if (frame % 4 == 0) {
+        animate = true;
+    }
 
-        if (animate) {
-            animationOffset++;
-            animate = false;
-            if (animationOffset > 6) {
-                animationOffset = 0;
-            }
-        }
-
-        // Load character data
-        int scaledWidth = (int) (character_image.getWidth() * 0.7 / 7);
-        int scaledHeight = (int) (character_image.getHeight() * 0.7);
-        for (int i = 0; i < characters.size(); i++) {
-            Character character = characters.get(i); // Get the current character
-            int yOffset = i * 128;
-
-            // Draw background box for character data
-            g.setColor(new Color(57, 65, 108));
-            g.fillRect(523, 76 + yOffset, 227, 75);
-
-            // Draw character image
-            g.drawImage(character_image.getSubimage(animationOffset * 74, 0, 74, 120), 378,
-                    50 + scaledHeight / 2 + yOffset,
-                    scaledWidth, scaledHeight, this);
-
-            // Draw character name
-            g.setFont(customFont.deriveFont(10f));
-            g.setColor(new Color(228, 229, 231));
-            g.drawString(character.name, 450, 70 + yOffset);
-
-            // Character Summary Data
-            g.drawImage(load_game_character_data_image, 480, 68 + yOffset, this);
-
-            // Draw Level
-            helperMethods.drawCenteredString(g, "Level: " + character.level, new Rectangle(480, 80 + yOffset, 138, 73), customFont.deriveFont(10f));
-
-            // Draw Difficulty
-            if (character.difficulty.equals("Easy")) {
-                g.setColor(Color.green);
-            } else if (character.difficulty.equals("Normal")) {
-                g.setColor(Color.yellow);
-            } else {
-                g.setColor(Color.red);
-            }
-            helperMethods.drawCenteredString(g, character.difficulty, new Rectangle(480, 100 + yOffset, 138, 73), customFont.deriveFont(10f));
-
-            // Draw Progress Level
-            g.setColor(new Color(82, 113, 255));
-            helperMethods.drawCenteredString(g, "Progress: " + character.currentLevelProgress,
-                    new Rectangle(645, 80 + yOffset, 174, 92), customFont.deriveFont(10f));
-
-            // Draw Saved Time
-            g.setColor(new Color(255, 255, 255)); // White color for visibility
-            String formattedTime = formatTime(character.timer); // Format the timer value
-            helperMethods.drawCenteredString(g, "Time: " + formattedTime,
-                    new Rectangle(645, 100 + yOffset, 174, 92), customFont.deriveFont(10f));
-
-            // Delete and Play Buttons
-            g.drawImage(load_game_buttons_image, 364 + 545 - load_game_buttons_image.getWidth() - 20,
-                    50 + 126 / 2 - load_game_buttons_image.getHeight() / 2 + i * 128, this);
+    if (animate) {
+        animationOffset++;
+        animate = false;
+        if (animationOffset > 6) {
+            animationOffset = 0;
         }
     }
+
+    // Load character data
+    int scaledWidth = (int) (character_image.getWidth() * 0.7 / 7);
+    int scaledHeight = (int) (character_image.getHeight() * 0.7);
+    for (int i = 0; i < characters.size(); i++) {
+        Character character = characters.get(i); // Get the current character
+        int yOffset = i * 128;
+
+        // Draw background box for character data
+        g.setColor(new Color(57, 65, 108));
+        g.fillRect(523, 76 + yOffset, 227, 75);
+
+        // Draw character image
+        g.drawImage(character_image.getSubimage(animationOffset * 74, 0, 74, 120), 378,
+                50 + scaledHeight / 2 + yOffset,
+                scaledWidth, scaledHeight, this);
+
+        // Draw character name
+        g.setFont(customFont.deriveFont(10f));
+        g.setColor(new Color(228, 229, 231));
+        g.drawString(character.name, 450, 70 + yOffset);
+
+        // Character Summary Data
+        g.drawImage(load_game_character_data_image, 480, 68 + yOffset, this);
+
+        // Draw Level
+        helperMethods.drawCenteredString(g, "Level: " + character.level, new Rectangle(480, 80 + yOffset, 138, 73), customFont.deriveFont(10f));
+
+        // Draw Difficulty
+        if (character.difficulty.equals("Easy")) {
+            g.setColor(Color.green);
+        } else if (character.difficulty.equals("Normal")) {
+            g.setColor(Color.yellow);
+        } else {
+            g.setColor(Color.red);
+        }
+        helperMethods.drawCenteredString(g, character.difficulty, new Rectangle(480, 100 + yOffset, 138, 73), customFont.deriveFont(10f));
+
+        // Draw Progress Level
+        g.setColor(new Color(82, 113, 255));
+        helperMethods.drawCenteredString(g, "Progress: " + character.currentLevelProgress,
+                new Rectangle(645, 80 + yOffset, 174, 92), customFont.deriveFont(10f));
+
+        // Draw Saved Time
+        g.setColor(new Color(255, 255, 255)); // White color for visibility
+        String formattedTime = formatTime(character.timer); // Format the timer value
+        helperMethods.drawCenteredString(g, "Time: " + formattedTime,
+                new Rectangle(645, 100 + yOffset, 174, 92), customFont.deriveFont(10f));
+
+        // Draw Score
+        g.setColor(new Color(255, 255, 255)); // White color for visibility
+        helperMethods.drawCenteredString(g, "Score: " + character.score,
+                new Rectangle(645, 120 + yOffset, 174, 92), customFont.deriveFont(10f));
+
+        // Delete and Play Buttons
+        g.drawImage(load_game_buttons_image, 364 + 545 - load_game_buttons_image.getWidth() - 20,
+                50 + 126 / 2 - load_game_buttons_image.getHeight() / 2 + i * 128, this);
+    }
+}
 
     private void settingsScreen(Graphics g) {
         g.drawImage((this.currentScreen.contains("controls")) ? settings_controls_image : settings_audio_image, 0, 0, this);
@@ -433,39 +458,39 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
     }
 
     private void loadCharacters() {
-        if (testing) {
+        characters.clear(); // Clear the existing list of characters
+        if (stmt == null) {
+            System.out.println("Database statement is null. Unable to load characters.");
             return;
         }
 
         try {
-            characters.clear();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM characters");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM characters ORDER BY score DESC"); // Sort by score
             while (rs.next()) {
-                int x = 100;
-                int y = 300;
-                Rectangle rect = new Rectangle(x, y, 74, 107);
                 String name = rs.getString("name");
-                String d = rs.getString("difficulty");
-                int lvl = rs.getInt("level");
-                int s = rs.getInt("strength");
-                int a = rs.getInt("agility");
-                int v = rs.getInt("vitality");
-                int c = rs.getInt("coins");
-                int smallp = rs.getInt("smallPotion");
-                int mediump = rs.getInt("mediumPotion");
-                int bigp = rs.getInt("bigPotion");
-                int speedp = rs.getInt("speedPotion");
-                int goldenbanana = rs.getInt("goldenBanana");
-                int lp = rs.getInt("level_progress");
-                long timer = rs.getLong("timer"); // Retrieve the timer value
+                String difficulty = rs.getString("difficulty");
+                int level = rs.getInt("level");
+                int strength = rs.getInt("strength");
+                int agility = rs.getInt("agility");
+                int vitality = rs.getInt("vitality");
+                int coins = rs.getInt("coins");
+                int smallPotion = rs.getInt("smallPotion");
+                int mediumPotion = rs.getInt("mediumPotion");
+                int bigPotion = rs.getInt("bigPotion");
+                int speedPotion = rs.getInt("speedPotion");
+                int goldenBanana = rs.getInt("goldenBanana");
+                int levelProgress = rs.getInt("level_progress");
+                long timer = rs.getLong("timer");
+                int score = rs.getInt("score");
 
-                Character character = new Character(rect, name, d, lvl, s, a, v, c, smallp, mediump, bigp, speedp, goldenbanana, lp);
-                character.timer = timer; // Initialize the timer value
+                Character character = new Character(new Rectangle(0, 0, 74, 107), name, difficulty, level, strength, agility, vitality, coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, levelProgress);
+                character.timer = timer;
+                character.score = score; // Set the score
                 characters.add(character);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            System.out.println("Unable to load characters from the database.");
             e.printStackTrace();
-            return;
         }
     }
 

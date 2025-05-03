@@ -32,4 +32,6 @@ public final class Constants {
     public final static int COIN = 12;
     public final static int HURT = 13;
     public final static int JUMP = 14;
+    
+    public static final int DELAY = 25; // Timer delay in milliseconds
 }

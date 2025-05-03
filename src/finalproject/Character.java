@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
+import java.sql.Statement;
+import java.sql.SQLException;
+
 import static finalproject.Constants.*;
 
 public class Character {
@@ -31,6 +34,9 @@ public class Character {
     public int goldenBanana;
 
     public int currentLevelProgress;
+
+    public int score;
+
     public HashMap<Item, Integer> inventory = new HashMap();
 
     // Inputs
@@ -82,15 +88,19 @@ public class Character {
         this.agility = agi;
         this.vitality = vit;
         this.coins = coins;
-        currentLevelProgress = LP;
         this.smallPotion = smallP;
         this.mediumPotion = Medp;
         this.bigPotion = bp;
         this.speedPotion = speep;
         this.goldenBanana = gB;
+        this.currentLevelProgress = LP;
 
-        this.health = vit * 2;
+        // Initialize health and max health
         this.max_health = vit * 2;
+        this.health = this.max_health;
+
+        // Initialize score
+        this.score = 0;
     }
 
     public void interactWithMerchant() {
@@ -486,6 +496,43 @@ public class Character {
             }
         }
         return pos;
+    }
+
+    public void calculateScore() {
+        // Coin Score (logarithmic scaling)
+        int coinScore = (int) (Math.log(this.coins + 1) * 100);
+
+        // Level Progress Score (linear scaling)
+        int levelScore = this.currentLevelProgress * 500;
+
+        // Health Score (percentage of remaining HP)
+        int healthScore = (int) ((this.health / (double) this.max_health) * 1000);
+
+        // Difficulty Multiplier
+        double difficultyMultiplier = 1.0;
+        if ("Normal".equals(this.difficulty)) {
+            difficultyMultiplier = 1.5;
+        } else if ("Hard".equals(this.difficulty)) {
+            difficultyMultiplier = 2.0;
+        }
+
+        // Time Bonus (inverse relationship with elapsed time)
+        long elapsedTimeInSeconds = this.timer / 1000; // Convert milliseconds to seconds
+        double timeMultiplier = 10000.0 / (elapsedTimeInSeconds + 1); // Add 1 to avoid division by zero
+
+        // Calculate the final score
+        this.score = (int) ((coinScore + levelScore + healthScore) * timeMultiplier * difficultyMultiplier);
+    }
+
+    // Save method to store character data in the database
+    public void save(Statement stmt) {
+        try {
+            stmt.execute("INSERT INTO characters(name, difficulty, level, strength, agility, vitality, coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, level_progress, timer, score) "
+                    + "VALUES('" + this.name + "', '" + this.difficulty + "', " + this.level + ", " + this.strength + ", " + this.agility + ", " + this.vitality + ", " + this.coins + ", " + this.smallPotion + ", " + this.mediumPotion + ", " + this.bigPotion + ", " + this.speedPotion + ", " + this.goldenBanana + ", " + this.currentLevelProgress + ", " + this.timer + ", " + this.score + ")");
+        } catch (SQLException e) {
+            System.out.println("Unable to execute statement!");
+            e.printStackTrace();
+        }
     }
 
 }

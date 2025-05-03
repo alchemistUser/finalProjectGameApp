@@ -31,7 +31,6 @@ Easy - 1x enemy hp and 1x rewards
 Normal - 2x enemy hp and 2x rewards
 Hard - 3x enemy hp and 4x rewards
  */
-
 public class Game extends JPanel implements ActionListener, KeyListener, MouseMotionListener, MouseListener {
 
     // controls the delay between each tick in ms
@@ -400,6 +399,13 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
         if (player.interactedWith instanceof Portal && player.interact) {
             player.currentLevelProgress++;
             coins.clear();
+
+            // Calculate the score
+            player.calculateScore();
+
+            // Save the player's progress
+            save();
+
             player.interact = false;
             fadeAnimation = true;
             fadeOutAnimation = true;
@@ -631,6 +637,10 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
         int textY = 40; // Position near the top of the screen
         g.drawString(stopwatchText, textX, textY);
 
+        // Display the player's score
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.setColor(Color.WHITE);
+        g.drawString("Score: " + player.score, 20, 20);
     }
 
     @Override
