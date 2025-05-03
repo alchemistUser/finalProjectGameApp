@@ -476,4 +476,13 @@ public class HelperMethods {
         return levels;
     }
 
+    public static BufferedImage loadLeaderboardBackgroundImage() {
+        try {
+            return ImageIO.read(new File("src/finalproject/img/UIs/leaderboards_ui_menu.png"));
+        } catch (Exception e) {
+            System.out.println("Unable to load leaderboard UI image.");
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

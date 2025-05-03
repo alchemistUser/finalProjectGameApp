@@ -215,6 +215,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
 
         // Reset player's coins to zero
         this.player.coins = 0;
+        this.player.score = 0;
 
         // Reset the stopwatch
         this.startTime = System.currentTimeMillis();
@@ -401,7 +402,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
             coins.clear();
 
             // Calculate the score
-            player.calculateScore();
+            player.addScoreForLevelProgress(); // Add score for progressing to the next level
 
             // Save the player's progress
             save();
@@ -471,6 +472,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
 
             for (Enemy enemy : enemy_projectiles) {
                 if (enemy.projectile != null && player.isHit(enemy.projectile)) {
+                    player.deductScoreForDamage(); // Deduct score for taking damage
                     enemy.projectile = null;
                     break;
                 }
@@ -480,6 +482,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
                 Coin coin = (Coin) coinObj;
                 if (!coin.collected && !this.levels.get(this.current_level).contains(coinObj)) {
                     this.levels.get(this.current_level).add(coinObj);
+                    player.addScoreForCoin(); // Add score for collecting a coin
                 }
             }
 
@@ -901,33 +904,53 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
     }
 
     private void save() {
-        if (stmt == null) {
-            System.out.println("Database statement is null. Unable to save.");
-            return;
-        }
-
-        try {
-            stmt.execute("DELETE FROM characters WHERE name='" + player.name + "'");
-            stmt.execute("INSERT INTO characters(name, difficulty, level, strength, agility, vitality, coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, level_progress, timer) VALUES('"
-                    + player.name + "', '"
-                    + player.difficulty + "', "
-                    + player.level + ", "
-                    + player.strength + ", "
-                    + player.agility + ", "
-                    + player.vitality + ", "
-                    + player.coins + ", "
-                    + player.smallPotion + ", "
-                    + player.mediumPotion + ", "
-                    + player.bigPotion + ", "
-                    + player.speedPotion + ", "
-                    + player.goldenBanana + ", "
-                    + player.currentLevelProgress + ", "
-                    + elapsedTime + ")"); // Save the elapsed time
-        } catch (SQLException SQLError) {
-            System.out.println("Unable to execute statement!");
-            SQLError.printStackTrace();
-        }
+    if (stmt == null) {
+        System.out.println("Database statement is null. Unable to save.");
+        return;
     }
+    try {
+        // Save character data to the 'characters' table
+        stmt.execute("DELETE FROM characters WHERE name='" + player.name + "'");
+        stmt.execute("INSERT INTO characters(name, difficulty, level, strength, agility, vitality, coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, level_progress, timer, score) VALUES('"
+                + player.name + "', '"
+                + player.difficulty + "', "
+                + player.level + ", "
+                + player.strength + ", "
+                + player.agility + ", "
+                + player.vitality + ", "
+                + player.coins + ", "
+                + player.smallPotion + ", "
+                + player.mediumPotion + ", "
+                + player.bigPotion + ", "
+                + player.speedPotion + ", "
+                + player.goldenBanana + ", "
+                + player.currentLevelProgress + ", "
+                + elapsedTime + ", "
+                + player.score + ")");
+
+        // Update or insert the player's entry in the 'leaderboards' table
+        stmt.execute("INSERT OR REPLACE INTO leaderboards(id, name, difficulty, level, strength, agility, vitality, coins, smallPotion, mediumPotion, bigPotion, speedPotion, goldenBanana, level_progress, timer, score) VALUES("
+                + "(SELECT id FROM leaderboards WHERE name='" + player.name + "'), '"
+                + player.name + "', '"
+                + player.difficulty + "', "
+                + player.level + ", "
+                + player.strength + ", "
+                + player.agility + ", "
+                + player.vitality + ", "
+                + player.coins + ", "
+                + player.smallPotion + ", "
+                + player.mediumPotion + ", "
+                + player.bigPotion + ", "
+                + player.speedPotion + ", "
+                + player.goldenBanana + ", "
+                + player.currentLevelProgress + ", "
+                + elapsedTime + ", "
+                + player.score + ")");
+    } catch (SQLException e) {
+        System.out.println("Unable to execute statement!");
+        e.printStackTrace();
+    }
+}
 
     public void loadImages() {
         String filepath = "src/finalproject/img/";

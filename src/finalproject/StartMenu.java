@@ -52,7 +52,7 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
     private HashMap<String, Point> button_pos = new HashMap();
     private Point mouse_pos = new Point(0, 0);
 
-    private String currentScreen = "";
+    public static String currentScreen = "";
 
     private String typedCharacterName = "";
     private int frame = 0;
@@ -117,16 +117,6 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
             newGameScreen(g);
         } else if (this.currentScreen.equals("LOAD GAME")) {
             loadGameScreen(g);
-        } else if (this.currentScreen.equals("Leaderboards")) {
-            // Open the Leaderboards screen
-            window.removeMouseListener(this);
-            window.removeMouseMotionListener(this);
-            Leaderboards leaderboards = new Leaderboards(window, stmt); // Pass the `stmt` object
-            window.add(leaderboards);
-            window.addMouseListener(leaderboards);
-            window.addMouseMotionListener(leaderboards);
-            window.remove(this);
-            window.validate();
         } else {
             settingsScreen(g);
         }
@@ -162,12 +152,16 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
                         // Open the Leaderboards screen
                         window.removeMouseListener(this);
                         window.removeMouseMotionListener(this);
-                        Leaderboards leaderboards = new Leaderboards(window, stmt); // Pass the `stmt` object
+
+                        Leaderboards leaderboards = new Leaderboards(window, stmt);
                         window.add(leaderboards);
                         window.addMouseListener(leaderboards);
                         window.addMouseMotionListener(leaderboards);
+
                         window.remove(this);
                         window.validate();
+                    } else if (buttonName.equals("Back")) {
+                        this.currentScreen = "Start"; // Ensure the screen state is reset
                     } else {
                         this.currentScreen = "Settings-audio";
                     }
@@ -358,79 +352,79 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
         g.drawString(typing, 530, 260);
     }
 
-private void loadGameScreen(Graphics g) {
-    g.drawImage(load_game_image, 0, 0, this);
+    private void loadGameScreen(Graphics g) {
+        g.drawImage(load_game_image, 0, 0, this);
 
-    if (frame % 4 == 0) {
-        animate = true;
-    }
+        if (frame % 4 == 0) {
+            animate = true;
+        }
 
-    if (animate) {
-        animationOffset++;
-        animate = false;
-        if (animationOffset > 6) {
-            animationOffset = 0;
+        if (animate) {
+            animationOffset++;
+            animate = false;
+            if (animationOffset > 6) {
+                animationOffset = 0;
+            }
+        }
+
+        // Load character data
+        int scaledWidth = (int) (character_image.getWidth() * 0.7 / 7);
+        int scaledHeight = (int) (character_image.getHeight() * 0.7);
+        for (int i = 0; i < characters.size(); i++) {
+            Character character = characters.get(i); // Get the current character
+            int yOffset = i * 128;
+
+            // Draw background box for character data
+            g.setColor(new Color(57, 65, 108));
+            g.fillRect(523, 76 + yOffset, 227, 75);
+
+            // Draw character image
+            g.drawImage(character_image.getSubimage(animationOffset * 74, 0, 74, 120), 378,
+                    50 + scaledHeight / 2 + yOffset,
+                    scaledWidth, scaledHeight, this);
+
+            // Draw character name
+            g.setFont(customFont.deriveFont(10f));
+            g.setColor(new Color(228, 229, 231));
+            g.drawString(character.name, 450, 70 + yOffset);
+
+            // Character Summary Data
+            g.drawImage(load_game_character_data_image, 480, 68 + yOffset, this);
+
+            // Draw Level
+            helperMethods.drawCenteredString(g, "Level: " + character.level, new Rectangle(480, 80 + yOffset, 138, 73), customFont.deriveFont(10f));
+
+            // Draw Difficulty
+            if (character.difficulty.equals("Easy")) {
+                g.setColor(Color.green);
+            } else if (character.difficulty.equals("Normal")) {
+                g.setColor(Color.yellow);
+            } else {
+                g.setColor(Color.red);
+            }
+            helperMethods.drawCenteredString(g, character.difficulty, new Rectangle(480, 100 + yOffset, 138, 73), customFont.deriveFont(10f));
+
+            // Draw Progress Level
+            g.setColor(new Color(82, 113, 255));
+            helperMethods.drawCenteredString(g, "Progress: " + character.currentLevelProgress,
+                    new Rectangle(645, 80 + yOffset, 174, 92), customFont.deriveFont(10f));
+
+            // Draw Saved Time
+            g.setColor(new Color(255, 255, 255)); // White color for visibility
+            String formattedTime = formatTime(character.timer); // Format the timer value
+            helperMethods.drawCenteredString(g, "Time: " + formattedTime,
+                    new Rectangle(645, 100 + yOffset, 174, 92), customFont.deriveFont(10f));
+
+            // Draw Score
+            g.setColor(new Color(255, 255, 255)); // White color for visibility
+            helperMethods.drawCenteredString(g, "Score: " + character.score,
+                    new Rectangle(645, 120 + yOffset, 174, 92), customFont.deriveFont(10f));
+
+            // Delete and Play Buttons
+            g.drawImage(load_game_buttons_image, 364 + 545 - load_game_buttons_image.getWidth() - 20,
+                    50 + 126 / 2 - load_game_buttons_image.getHeight() / 2 + i * 128, this);
         }
     }
-
-    // Load character data
-    int scaledWidth = (int) (character_image.getWidth() * 0.7 / 7);
-    int scaledHeight = (int) (character_image.getHeight() * 0.7);
-    for (int i = 0; i < characters.size(); i++) {
-        Character character = characters.get(i); // Get the current character
-        int yOffset = i * 128;
-
-        // Draw background box for character data
-        g.setColor(new Color(57, 65, 108));
-        g.fillRect(523, 76 + yOffset, 227, 75);
-
-        // Draw character image
-        g.drawImage(character_image.getSubimage(animationOffset * 74, 0, 74, 120), 378,
-                50 + scaledHeight / 2 + yOffset,
-                scaledWidth, scaledHeight, this);
-
-        // Draw character name
-        g.setFont(customFont.deriveFont(10f));
-        g.setColor(new Color(228, 229, 231));
-        g.drawString(character.name, 450, 70 + yOffset);
-
-        // Character Summary Data
-        g.drawImage(load_game_character_data_image, 480, 68 + yOffset, this);
-
-        // Draw Level
-        helperMethods.drawCenteredString(g, "Level: " + character.level, new Rectangle(480, 80 + yOffset, 138, 73), customFont.deriveFont(10f));
-
-        // Draw Difficulty
-        if (character.difficulty.equals("Easy")) {
-            g.setColor(Color.green);
-        } else if (character.difficulty.equals("Normal")) {
-            g.setColor(Color.yellow);
-        } else {
-            g.setColor(Color.red);
-        }
-        helperMethods.drawCenteredString(g, character.difficulty, new Rectangle(480, 100 + yOffset, 138, 73), customFont.deriveFont(10f));
-
-        // Draw Progress Level
-        g.setColor(new Color(82, 113, 255));
-        helperMethods.drawCenteredString(g, "Progress: " + character.currentLevelProgress,
-                new Rectangle(645, 80 + yOffset, 174, 92), customFont.deriveFont(10f));
-
-        // Draw Saved Time
-        g.setColor(new Color(255, 255, 255)); // White color for visibility
-        String formattedTime = formatTime(character.timer); // Format the timer value
-        helperMethods.drawCenteredString(g, "Time: " + formattedTime,
-                new Rectangle(645, 100 + yOffset, 174, 92), customFont.deriveFont(10f));
-
-        // Draw Score
-        g.setColor(new Color(255, 255, 255)); // White color for visibility
-        helperMethods.drawCenteredString(g, "Score: " + character.score,
-                new Rectangle(645, 120 + yOffset, 174, 92), customFont.deriveFont(10f));
-
-        // Delete and Play Buttons
-        g.drawImage(load_game_buttons_image, 364 + 545 - load_game_buttons_image.getWidth() - 20,
-                50 + 126 / 2 - load_game_buttons_image.getHeight() / 2 + i * 128, this);
-    }
-}
 
     private void settingsScreen(Graphics g) {
         g.drawImage((this.currentScreen.contains("controls")) ? settings_controls_image : settings_audio_image, 0, 0, this);

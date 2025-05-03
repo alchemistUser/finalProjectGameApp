@@ -498,32 +498,6 @@ public class Character {
         return pos;
     }
 
-    public void calculateScore() {
-        // Coin Score (logarithmic scaling)
-        int coinScore = (int) (Math.log(this.coins + 1) * 100);
-
-        // Level Progress Score (linear scaling)
-        int levelScore = this.currentLevelProgress * 500;
-
-        // Health Score (percentage of remaining HP)
-        int healthScore = (int) ((this.health / (double) this.max_health) * 1000);
-
-        // Difficulty Multiplier
-        double difficultyMultiplier = 1.0;
-        if ("Normal".equals(this.difficulty)) {
-            difficultyMultiplier = 1.5;
-        } else if ("Hard".equals(this.difficulty)) {
-            difficultyMultiplier = 2.0;
-        }
-
-        // Time Bonus (inverse relationship with elapsed time)
-        long elapsedTimeInSeconds = this.timer / 1000; // Convert milliseconds to seconds
-        double timeMultiplier = 10000.0 / (elapsedTimeInSeconds + 1); // Add 1 to avoid division by zero
-
-        // Calculate the final score
-        this.score = (int) ((coinScore + levelScore + healthScore) * timeMultiplier * difficultyMultiplier);
-    }
-
     // Save method to store character data in the database
     public void save(Statement stmt) {
         try {
@@ -533,6 +507,39 @@ public class Character {
             System.out.println("Unable to execute statement!");
             e.printStackTrace();
         }
+    }
+
+    public void deductScoreForDamage() {
+        // Define the deduction values for each difficulty level
+        int deduction = switch (this.difficulty) {
+            case "Easy" ->
+                10;
+            case "Normal" ->
+                20;
+            case "Hard" ->
+                30;
+            default ->
+                0; // Default case to handle unexpected difficulty values
+        };
+
+        // Deduct the score, ensuring it doesn't go below zero
+        this.score = Math.max(0, this.score - deduction);
+    }
+
+    public void addScoreForCoin() {
+        int addition = 0;
+        if (this.difficulty.equals("Easy")) {
+            addition = 1;
+        } else if (this.difficulty.equals("Normal")) {
+            addition = 2;
+        } else if (this.difficulty.equals("Hard")) {
+            addition = 4;
+        }
+        this.score += addition;
+    }
+
+    public void addScoreForLevelProgress() {
+        this.score += 500; // Fixed bonus for progressing to the next level
     }
 
 }
