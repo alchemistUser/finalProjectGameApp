@@ -40,7 +40,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         buttons.put("Score", new Rectangle(930, 416, 320, 75)); // Score button below "Level"
 
         // Load saved characters from the database
-        characters = loadEntriesFromDatabase(stmt, "characters");
+        characters = loadEntriesFromDatabase(stmt);
 
         // Set up the panel
         setPreferredSize(new Dimension(Constants.GAME_WIDTH, Constants.GAME_HEIGHT));
@@ -52,7 +52,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         timer.start();
     }
 
-    private ArrayList<Character> loadEntriesFromDatabase(Statement stmt, String tableName) {
+    private ArrayList<Character> loadEntriesFromDatabase(Statement stmt, String tableName, String sort) {
         ArrayList<Character> entries = new ArrayList<>();
         try {
             if (stmt == null || stmt.getConnection() == null || stmt.getConnection().isClosed()) {
@@ -60,8 +60,17 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                 return entries;
             }
 
-            ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName + " ORDER BY score DESC"
-                    + (tableName.equals("leaderboards") ? " LIMIT 10" : ""));
+            // Construct the SQL query with the provided sorting criteria
+            String query = "SELECT * FROM " + tableName;
+            if (sort != null && !sort.isEmpty()) {
+                query += " ORDER BY " + sort+" DESC";
+            }
+            if (tableName.equals("leaderboards")) {
+                query += " LIMIT 10"; // Limit results for leaderboards table
+            }
+
+            // Execute the query
+            ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 String name = rs.getString("name");
                 String difficulty = rs.getString("difficulty");
@@ -95,6 +104,32 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         }
 
         return entries;
+    }
+
+    private ArrayList<Character> loadEntriesFromDatabase(Statement stmt, String sort) {
+        return loadEntriesFromDatabase(stmt, "characters", sort);
+    }
+
+    private ArrayList<Character> loadEntriesFromDatabase(Statement stmt) {
+        return loadEntriesFromDatabase(stmt, "characters", "score");
+    }
+
+    // Algorithm for Time Sort
+    private void srtTime() {
+        System.out.println("please implement time sort here");
+        characters = loadEntriesFromDatabase(stmt, "timer");
+    }
+
+    // Algorithm for Level Sort
+    private void srtLevel() {
+        System.out.println("please implement level sort here");
+        characters = loadEntriesFromDatabase(stmt, "level");
+    }
+
+    // Algorithm for Score Sort
+    private void srtScore() {
+        System.out.println("please implement score sort here");
+        characters = loadEntriesFromDatabase(stmt, "score");
     }
 
     @Override
@@ -181,19 +216,6 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                 }
             }
         }
-    }
-    
-    // Algorithm for Time Sort
-    private void srtTime(){
-        System.out.println("please implement time sort here");
-    }
-    // Algorithm for Level Sort
-    private void srtLevel(){
-        System.out.println("please implement level sort here");
-    }
-    // Algorithm for Score Sort
-    private void srtScore(){
-        System.out.println("please implement score sort here");
     }
 
     @Override
