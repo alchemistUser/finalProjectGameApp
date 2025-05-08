@@ -392,7 +392,7 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
             g.drawImage(load_game_character_data_image, 480, 68 + yOffset, this);
 
             // Draw Level
-            helperMethods.drawCenteredString(g, "Level: " + character.level, new Rectangle(480, 80 + yOffset, 138, 73), customFont.deriveFont(10f));
+            helperMethods.drawCenteredString(g, "Level: " + character.currentLevelProgress, new Rectangle(480, 80 + yOffset, 138, 73), customFont.deriveFont(10f));
 
             // Draw Difficulty
             if (character.difficulty.equals("Easy")) {
@@ -404,21 +404,21 @@ public class StartMenu extends JPanel implements ActionListener, MouseMotionList
             }
             helperMethods.drawCenteredString(g, character.difficulty, new Rectangle(480, 100 + yOffset, 138, 73), customFont.deriveFont(10f));
 
-            // Draw Progress Level
-            g.setColor(new Color(82, 113, 255));
-            helperMethods.drawCenteredString(g, "Progress: " + character.currentLevelProgress,
-                    new Rectangle(645, 80 + yOffset, 174, 92), customFont.deriveFont(10f));
+            // Draw Score
+            g.setColor(new Color(255, 255, 255)); // White color for visibility
+            helperMethods.drawCenteredString(g, "Score: " + character.score,
+                    new Rectangle(645, 65 + yOffset, 174, 92), customFont.deriveFont(10f));
 
             // Draw Saved Time
             g.setColor(new Color(255, 255, 255)); // White color for visibility
             String formattedTime = formatTime(character.timer); // Format the timer value
             helperMethods.drawCenteredString(g, "Time: " + formattedTime,
-                    new Rectangle(645, 100 + yOffset, 174, 92), customFont.deriveFont(10f));
-
-            // Draw Score
-            g.setColor(new Color(255, 255, 255)); // White color for visibility
-            helperMethods.drawCenteredString(g, "Score: " + character.score,
-                    new Rectangle(645, 120 + yOffset, 174, 92), customFont.deriveFont(10f));
+                    new Rectangle(645, 80 + yOffset, 174, 92), customFont.deriveFont(10f));
+            
+            // Draw Coins
+            g.setColor(new Color(255, 255, 255));
+            helperMethods.drawCenteredString(g, "Coins: " + character.coins,
+                    new Rectangle(645, 95 + yOffset, 174, 92), customFont.deriveFont(10f));
 
             // Delete and Play Buttons
             g.drawImage(load_game_buttons_image, 364 + 545 - load_game_buttons_image.getWidth() - 20,

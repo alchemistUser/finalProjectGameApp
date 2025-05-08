@@ -402,7 +402,9 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
             coins.clear();
 
             // Calculate the score
-            player.addScoreForLevelProgress(); // Add score for progressing to the next level
+            if (current_level % 2 == 1) {
+                player.addScoreForLevelProgress(); // Add score for progressing to the next level
+            }
 
             // Save the player's progress
             save();

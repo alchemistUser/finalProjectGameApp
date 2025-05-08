@@ -204,7 +204,7 @@ public class HelperMethods {
 
     public HashMap loadObstacles(String difficulty) {
         float diffMultiplier = (difficulty.equals("Easy") ? 1f : difficulty.equals("Normal") ? 1.5f : 2f);
-
+        
         HashMap<Integer, ArrayList<Object>> levels = new HashMap<>();
         levels.put(1, new ArrayList<Object>() {
             {
@@ -311,7 +311,6 @@ public class HelperMethods {
                 // Enemies
                 add(new Enemy(SKELETON_ARCHER, 228, 45, 123, 180, 12, 1100, RangedFixed).setDirection("Right"));
                 add(new Enemy(SKELETON_WARRIOR, 1070, 475, 137, 129, new Point(570, 475), new Point(1281, 475), -12, Moving));
-                add(new Enemy(SKELETON_ARCHER, 228, 45, 123, 180, 12, 1100, RangedFixed).setDirection("Right"));
                 add(new Enemy(SKELETON_WARRIOR, 2900, 475, 137, 129, new Point(2364, 475), new Point(3025, 475), -12, Moving));
                 add(new Enemy(SKELETON_ARCHER, 3222, 424, 123, 180, 12, 800, RangedFixed));
 

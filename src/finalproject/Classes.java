@@ -98,6 +98,8 @@ class Enemy extends Rectangle {
     // Animation
     private boolean animated;
     private boolean animate = false;
+    private int animationFrames = -1;
+    private int framePerTick = 8;
     private int animationOffset = 0;
     
     // Hostile
@@ -157,12 +159,14 @@ class Enemy extends Rectangle {
     
     public void render(Graphics g, Camera camera, HashMap<Integer, BufferedImage> images, Game game) {
         BufferedImage img = images.get(id);
+        if (animationFrames == -1)
+            animationFrames = img.getWidth()/width;
         
         if (img.getWidth() > width) {
             if (animate)
                 animationOffset++;
             
-            if (animationOffset > img.getWidth()/width-1)
+            if (animationOffset > animationFrames-1)
                 animationOffset = 0;
             img = img.getSubimage(width*animationOffset, 0, width, height);
             animate = false;
@@ -191,7 +195,7 @@ class Enemy extends Rectangle {
         
         isHitByProjectile(player.projectiles);
         
-        if (!animate && tick % 4 == 0)
+        if (!imgs.containsKey(id) && !animate && tick % 4 == 0)
             animate = true;
         
         if (id == FINAL_BOSS) {
@@ -256,7 +260,11 @@ class Enemy extends Rectangle {
         if (projectile != null && id != FINAL_BOSS)
             return;
         
-        if (tick < lastAttack + attackDelay / difficultyMultiplier * 40)
+        int tickForAttack = (int)(lastAttack + attackDelay / difficultyMultiplier * 40);
+        if (!animate && tick % framePerTick == 0 && tick >= tickForAttack - animationFrames * framePerTick && tick < tickForAttack)
+            animate = true;
+            
+        if (tick < tickForAttack)
             return;
         
         if (id == PLANT)

@@ -107,7 +107,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                 comparator = Comparator.comparingLong(c -> c.timer);
                 break;
             case "Level":
-                comparator = Comparator.comparingInt(c -> c.level);
+                comparator = Comparator.comparingInt(c -> c.currentLevelProgress);
                 break;
             case "Score":
                 comparator = Comparator.comparingInt(c -> c.score);
@@ -165,7 +165,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
             case "Score":
                 return Integer.compare(c1.score, c2.score); // Ascending order for score
             case "Level":
-                return Integer.compare(c1.level, c2.level); // Ascending order for level
+                return Integer.compare(c1.currentLevelProgress, c2.currentLevelProgress); // Ascending order for level
             default:
                 throw new IllegalArgumentException("Invalid sorting criterion: " + sortBy);
         }
@@ -259,7 +259,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
 
             g.drawString(String.format("%d", i + 1), rankX, yOffset); // Rank
             g.drawString(character.name, nameX, yOffset); // Name
-            g.drawString(String.valueOf(character.level), levelX, yOffset); // Level
+            g.drawString(String.valueOf(character.currentLevelProgress), levelX, yOffset); // Level
             g.drawString(formattedTime, timeX, yOffset); // Time
             g.drawString(String.valueOf(character.score), scoreX, yOffset); // Score
             yOffset += 30; // Adjust spacing between entries
@@ -301,7 +301,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
     HashMap<String, Comparator<Character>> sortCriteria = new HashMap<>() {
         {
             put("Time", Comparator.comparingLong(c -> c.timer));
-            put("Level", Comparator.comparingInt(c -> c.level));
+            put("Level", Comparator.comparingInt(c -> c.currentLevelProgress));
             put("Score", Comparator.comparingInt(c -> c.score));
         }
     };
