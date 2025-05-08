@@ -24,7 +24,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
     int alevelX = 635; // Level column
     int atimeX = 710; // Time column
     int ascoreX = 820; // Score column
-    int ayOffset = 200; // Starting vertical position
+    int ayOffset = 210; // Starting vertical position
 
     private JFrame window;
     private BufferedImage leaderboard_ui_image; // Background image for the leaderboards screen
@@ -33,6 +33,20 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
     private ArrayList<Character> characters; // List of saved characters (for leaderboard data)
     private HashMap<String, Rectangle> buttons = new HashMap<>();
     private Statement stmt; // Class-level declaration of stmt
+
+    private int currentPage = 0; // Current page (0-based index)
+    private int entriesPerPage = 15; // Number of entries per page
+    private String sortBy = "Score"; // Default sorting criterion (can be "Time", "Level", or "Score")
+    private boolean isAscending = false; // Default sorting order
+    
+
+    private int ascdesc_x = 936;
+    private int asc_y = 530;
+    private int desc_y = 620;
+    private int navbtns_x = 310;
+    private int nextbtn_y = 375;
+    private int prevbtn_y = 305;
+    private int navbts_width = 50;
 
     public Leaderboards(JFrame window, Statement stmt) {
         this.window = window;
@@ -46,6 +60,10 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         buttons.put("Time", new Rectangle(930, 230, 320, 75)); // Time button on the right
         buttons.put("Level", new Rectangle(930, 323, 320, 75)); // Level button below "Time"
         buttons.put("Score", new Rectangle(930, 416, 320, 75)); // Score button below "Level"
+        buttons.put("Next", new Rectangle(navbtns_x, nextbtn_y, navbts_width, 50)); // Next button
+        buttons.put("Previous", new Rectangle(navbtns_x, prevbtn_y, navbts_width, 50)); // Previous button
+        buttons.put("Ascending", new Rectangle(ascdesc_x, asc_y, 150, 50)); // Ascending button
+        buttons.put("Descending", new Rectangle(ascdesc_x, desc_y, 150, 50)); // Descending button
 
         // Load saved characters from the database
         characters = loadEntriesFromDatabase(stmt);
@@ -58,51 +76,76 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         // Start the timer for animations or updates
         timer = new Timer(Constants.DELAY, this);
         timer.start();
+        sortCharacters();
     }
 
-    // Algorithm for Time Sort
+// Algorithm for Time Sort
     private void srtTime() {
         System.out.println("Sorting by time...");
-        quickSort(characters, "Time"); // Sort by timer
-        repaint(); // Refresh the UI
+        sortBy = "Time"; // Set the sorting criterion to "Time"
+        sortCharacters(); // Trigger sorting
     }
 
-    // Algorithm for Level Sort
+// Algorithm for Level Sort
     private void srtLevel() {
         System.out.println("Sorting by level...");
-        quickSort(characters, "Level"); // Sort by level
-        repaint(); // Refresh the UI
+        sortBy = "Level"; // Set the sorting criterion to "Level"
+        sortCharacters(); // Trigger sorting
     }
 
-    // Algorithm for Score Sort
+// Algorithm for Score Sort
     private void srtScore() {
         System.out.println("Sorting by score...");
-        quickSort(characters, "Score"); // Sort by score
+        sortBy = "Score"; // Set the sorting criterion to "Score"
+        sortCharacters(); // Trigger sorting
+    }
+
+    private void sortCharacters() {
+        Comparator<Character> comparator;
+        switch (sortBy) {
+            case "Time":
+                comparator = Comparator.comparingLong(c -> c.timer);
+                break;
+            case "Level":
+                comparator = Comparator.comparingInt(c -> c.level);
+                break;
+            case "Score":
+                comparator = Comparator.comparingInt(c -> c.score);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid sorting criterion: " + sortBy);
+        }
+
+        if (!isAscending) {
+            comparator = comparator.reversed(); // Reverse for descending order
+        }
+
+        quickSort(characters, comparator); // Perform the quicksort
         repaint(); // Refresh the UI
     }
 
-    private void quickSort(ArrayList<Character> list, String sortBy) {
-        quickSortHelper(list, 0, list.size() - 1, sortBy);
+    private void quickSort(ArrayList<Character> list, Comparator<Character> comparator) {
+        quickSortHelper(list, 0, list.size() - 1, comparator);
     }
 
-    private void quickSortHelper(ArrayList<Character> list, int low, int high, String sortBy) {
+    private void quickSortHelper(ArrayList<Character> list, int low, int high, Comparator<Character> comparator) {
         if (low < high) {
             // Partition the array and get the pivot index
-            int pi = partition(list, low, high, sortBy);
+            int pi = partition(list, low, high, comparator);
 
             // Recursively sort elements before and after partition
-            quickSortHelper(list, low, pi - 1, sortBy);
-            quickSortHelper(list, pi + 1, high, sortBy);
+            quickSortHelper(list, low, pi - 1, comparator);
+            quickSortHelper(list, pi + 1, high, comparator);
         }
     }
 
-    private int partition(ArrayList<Character> list, int low, int high, String sortBy) {
+    private int partition(ArrayList<Character> list, int low, int high, Comparator<Character> comparator) {
         Character pivot = list.get(high); // Choose the last element as the pivot
         int i = low - 1; // Index of the smaller element
 
         for (int j = low; j < high; j++) {
-            // Compare elements based on the sorting criterion
-            if (compareCharacters(list.get(j), pivot, sortBy) <= 0) {
+            // Compare elements using the provided comparator
+            if (comparator.compare(list.get(j), pivot) <= 0) {
                 i++;
                 // Swap elements at indices i and j
                 Collections.swap(list, i, j);
@@ -202,8 +245,12 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         int scoreX = ascoreX; // Score column
         int yOffset = ayOffset; // Starting vertical position
 
-        // Render leaderboard entries
-        for (int i = 0; i < characters.size(); i++) {
+        // Calculate the start and end indices for the current page
+        int startIndex = currentPage * entriesPerPage;
+        int endIndex = Math.min(startIndex + entriesPerPage, characters.size());
+
+        // Render leaderboard entries for the current page
+        for (int i = startIndex; i < endIndex; i++) {
             Character character = characters.get(i);
             String formattedTime = String.format("%02d:%02d:%02d",
                     character.timer / 3600000, // Hours
@@ -216,6 +263,38 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
             g.drawString(formattedTime, timeX, yOffset); // Time
             g.drawString(String.valueOf(character.score), scoreX, yOffset); // Score
             yOffset += 30; // Adjust spacing between entries
+        }
+
+        // Display page information
+//        g.drawString("Page: " + (currentPage + 1) + " / " + getTotalPages(), 420, 700);
+        // Draw "Next" and "Previous" buttons for debugging
+        g.setColor(Color.RED); // Use a contrasting color for visibility
+        Rectangle nextButton = buttons.get("Next");
+        Rectangle previousButton = buttons.get("Previous");
+
+        if (nextButton != null) {
+//            g.drawRect(navbtns_x, nextbtn_y, navbts_width, nextButton.height);
+//            g.drawString("Next", navbtns_x, nextButton.y + 20); // Add label inside the button
+        }
+
+        if (previousButton != null) {
+//            g.drawRect(navbtns_x, prevbtn_y, navbts_width, previousButton.height);
+//            g.drawString("Prev", navbtns_x, previousButton.y + 20); // Add label inside the button
+        }
+
+        // Draw "Ascending" and "Descending" buttons for debugging
+        g.setColor(Color.RED); // Use a contrasting color for visibility
+        Rectangle ascendingButton = buttons.get("Ascending");
+        Rectangle descendingButton = buttons.get("Descending");
+
+        if (ascendingButton != null) {
+//            g.drawRect(ascdesc_x, asc_y, ascendingButton.width+160, ascendingButton.height);
+//            g.drawString("Asc", ascendingButton.x + 10, ascendingButton.y + 20); // Add label inside the button
+        }
+
+        if (descendingButton != null) {
+//            g.drawRect(ascdesc_x, desc_y, descendingButton.width+160, descendingButton.height);
+//            g.drawString("Desc", descendingButton.x + 10, descendingButton.y + 20); // Add label inside the button
         }
     }
 
@@ -265,9 +344,39 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                     srtLevel();
                 } else if (buttonName.equals("Score")) {
                     srtScore();
+                } else if (buttonName.equals("Next")) {
+                    nextPage();
+                } else if (buttonName.equals("Previous")) {
+                    previousPage();
+                } else if (buttonName.equals("Ascending")) {
+                    isAscending = true; // Set ascending order
+                    System.out.println("Switched to ascending order");
+                    sortCharacters(); // Trigger sorting
+                } else if (buttonName.equals("Descending")) {
+                    isAscending = false; // Set descending order
+                    System.out.println("Switched to descending order");
+                    sortCharacters(); // Trigger sorting
                 }
             }
         }
+    }
+
+    private void nextPage() {
+        if (currentPage < getTotalPages() - 1) {
+            currentPage++;
+            repaint(); // Refresh the UI
+        }
+    }
+
+    private void previousPage() {
+        if (currentPage > 0) {
+            currentPage--;
+            repaint(); // Refresh the UI
+        }
+    }
+
+    private int getTotalPages() {
+        return (int) Math.ceil((double) characters.size() / entriesPerPage);
     }
 
     @Override
