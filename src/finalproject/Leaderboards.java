@@ -18,6 +18,14 @@ import javax.imageio.ImageIO;
 
 public class Leaderboards extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
 
+    // Define column positions
+    int arankX = 420; // Rank column
+    int anameX = 490; // Name column
+    int alevelX = 635; // Level column
+    int atimeX = 710; // Time column
+    int ascoreX = 820; // Score column
+    int ayOffset = 200; // Starting vertical position
+
     private JFrame window;
     private BufferedImage leaderboard_ui_image; // Background image for the leaderboards screen
     private Point mouse_pos = new Point(0, 0);
@@ -52,7 +60,75 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
         timer.start();
     }
 
-    private ArrayList<Character> loadEntriesFromDatabase(Statement stmt, String tableName, String sort) {
+    // Algorithm for Time Sort
+    private void srtTime() {
+        System.out.println("Sorting by time...");
+        quickSort(characters, "Time"); // Sort by timer
+        repaint(); // Refresh the UI
+    }
+
+    // Algorithm for Level Sort
+    private void srtLevel() {
+        System.out.println("Sorting by level...");
+        quickSort(characters, "Level"); // Sort by level
+        repaint(); // Refresh the UI
+    }
+
+    // Algorithm for Score Sort
+    private void srtScore() {
+        System.out.println("Sorting by score...");
+        quickSort(characters, "Score"); // Sort by score
+        repaint(); // Refresh the UI
+    }
+
+    private void quickSort(ArrayList<Character> list, String sortBy) {
+        quickSortHelper(list, 0, list.size() - 1, sortBy);
+    }
+
+    private void quickSortHelper(ArrayList<Character> list, int low, int high, String sortBy) {
+        if (low < high) {
+            // Partition the array and get the pivot index
+            int pi = partition(list, low, high, sortBy);
+
+            // Recursively sort elements before and after partition
+            quickSortHelper(list, low, pi - 1, sortBy);
+            quickSortHelper(list, pi + 1, high, sortBy);
+        }
+    }
+
+    private int partition(ArrayList<Character> list, int low, int high, String sortBy) {
+        Character pivot = list.get(high); // Choose the last element as the pivot
+        int i = low - 1; // Index of the smaller element
+
+        for (int j = low; j < high; j++) {
+            // Compare elements based on the sorting criterion
+            if (compareCharacters(list.get(j), pivot, sortBy) <= 0) {
+                i++;
+                // Swap elements at indices i and j
+                Collections.swap(list, i, j);
+            }
+        }
+
+        // Swap the pivot element with the element at i+1
+        Collections.swap(list, i + 1, high);
+
+        return i + 1; // Return the partition index
+    }
+
+    private int compareCharacters(Character c1, Character c2, String sortBy) {
+        switch (sortBy) {
+            case "Time":
+                return Long.compare(c1.timer, c2.timer); // Ascending order for time
+            case "Score":
+                return Integer.compare(c1.score, c2.score); // Ascending order for score
+            case "Level":
+                return Integer.compare(c1.level, c2.level); // Ascending order for level
+            default:
+                throw new IllegalArgumentException("Invalid sorting criterion: " + sortBy);
+        }
+    }
+
+    private ArrayList<Character> loadEntriesFromDatabase(Statement stmt) {
         ArrayList<Character> entries = new ArrayList<>();
         try {
             if (stmt == null || stmt.getConnection() == null || stmt.getConnection().isClosed()) {
@@ -61,13 +137,7 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
             }
 
             // Construct the SQL query with the provided sorting criteria
-            String query = "SELECT * FROM " + tableName;
-            if (sort != null && !sort.isEmpty()) {
-                query += " ORDER BY " + sort+" DESC";
-            }
-            if (tableName.equals("leaderboards")) {
-                query += " LIMIT 10"; // Limit results for leaderboards table
-            }
+            String query = "SELECT * FROM leaderboards";
 
             // Execute the query
             ResultSet rs = stmt.executeQuery(query);
@@ -99,37 +169,11 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
             }
         } catch (SQLException e) {
             System.out.println("SQL Error: " + e.getMessage());
-            System.out.println("Failed to execute query for table: " + tableName);
+            System.out.println("Failed to execute query for table: " + "leaderboards");
             e.printStackTrace();
         }
 
         return entries;
-    }
-
-    private ArrayList<Character> loadEntriesFromDatabase(Statement stmt, String sort) {
-        return loadEntriesFromDatabase(stmt, "characters", sort);
-    }
-
-    private ArrayList<Character> loadEntriesFromDatabase(Statement stmt) {
-        return loadEntriesFromDatabase(stmt, "characters", "score");
-    }
-
-    // Algorithm for Time Sort
-    private void srtTime() {
-        System.out.println("please implement time sort here");
-        characters = loadEntriesFromDatabase(stmt, "timer");
-    }
-
-    // Algorithm for Level Sort
-    private void srtLevel() {
-        System.out.println("please implement level sort here");
-        characters = loadEntriesFromDatabase(stmt, "level");
-    }
-
-    // Algorithm for Score Sort
-    private void srtScore() {
-        System.out.println("please implement score sort here");
-        characters = loadEntriesFromDatabase(stmt, "score");
     }
 
     @Override
@@ -146,10 +190,19 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
             return;
         }
 
-        // Render leaderboard entries
-        g.setFont(new Font("Arial", Font.BOLD, 16));
+        // Set up a monospaced font for consistent alignment
+        g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 16));
         g.setColor(Color.WHITE);
-        int yOffset = 150; // Starting vertical position for leaderboard entries
+
+        // Define column positions
+        int rankX = arankX; // Rank column
+        int nameX = anameX; // Name column
+        int levelX = alevelX; // Level column
+        int timeX = atimeX; // Time column
+        int scoreX = ascoreX; // Score column
+        int yOffset = ayOffset; // Starting vertical position
+
+        // Render leaderboard entries
         for (int i = 0; i < characters.size(); i++) {
             Character character = characters.get(i);
             String formattedTime = String.format("%02d:%02d:%02d",
@@ -157,13 +210,15 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                     (character.timer % 3600000) / 60000, // Minutes
                     (character.timer % 60000) / 1000); // Seconds
 
-            String entry = String.format("%d. %s - Level %d - %s - %d Coins - Score: %d - Time: %s",
-                    i + 1, character.name, character.level, character.difficulty, character.coins, character.score, formattedTime);
-            g.drawString(entry, 300, yOffset);
+            g.drawString(String.format("%d", i + 1), rankX, yOffset); // Rank
+            g.drawString(character.name, nameX, yOffset); // Name
+            g.drawString(String.valueOf(character.level), levelX, yOffset); // Level
+            g.drawString(formattedTime, timeX, yOffset); // Time
+            g.drawString(String.valueOf(character.score), scoreX, yOffset); // Score
             yOffset += 30; // Adjust spacing between entries
         }
-
     }
+
     HashMap<String, Comparator<Character>> sortCriteria = new HashMap<>() {
         {
             put("Time", Comparator.comparingLong(c -> c.timer));
@@ -205,13 +260,10 @@ public class Leaderboards extends JPanel implements ActionListener, MouseListene
                     window.requestFocusInWindow(); // Request focus for the StartMenu
                     StartMenu.currentScreen = "Start"; // Reset the screen state
                 } else if (buttonName.equals("Time")) {
-                    System.out.println("Time Sort");
                     srtTime();
                 } else if (buttonName.equals("Level")) {
-                    System.out.println("Level Sort");
                     srtLevel();
                 } else if (buttonName.equals("Score")) {
-                    System.out.println("Score Sort");
                     srtScore();
                 }
             }
