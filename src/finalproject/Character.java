@@ -78,6 +78,25 @@ public class Character {
     public int lastAttack = -1;
     public int lastHeal = -1;
 
+    public Character duplicate() {
+        return new Character(
+                this.rect,
+                this.name,
+                this.difficulty,
+                this.level,
+                this.strength,
+                this.agility,
+                this.vitality,
+                this.coins,
+                this.smallPotion,
+                this.mediumPotion,
+                this.bigPotion,
+                this.speedPotion,
+                this.goldenBanana,
+                this.currentLevelProgress
+        );
+    }
+    
     // Character Constructor
     public Character(Rectangle rect, String name, String diff, int lvl, int str, int agi, int vit, int coins, int smallP, int Medp, int bp, int speep, int gB, int LP) {
         this.rect = rect;
