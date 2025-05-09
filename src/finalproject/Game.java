@@ -44,6 +44,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
     private JFrame window;
 
     private Character player;
+    private Character temp_player;
     private Camera camera;
 
     private boolean nearPortal = false; // Tracks if the player is near the portal
@@ -111,6 +112,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
 
         this.stmt = stmt;
         this.player = player;
+        this.temp_player = player.duplicate();
         this.customFont = cf;
         this.settings = settings;
         this.window = window;
@@ -206,6 +208,8 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
     }
 
     private void resetLevel() {
+        this.player = this.temp_player.duplicate();
+        
         // Reset player's position
         this.player.rect.x = 100;
         this.player.rect.y = 300;
@@ -213,21 +217,9 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
         // Reset player's health
         this.player.health = this.player.max_health;
 
-        // Reset player's coins to zero
-        this.player.coins = 0;
-        this.player.score = 0;
-
         // Reset the stopwatch
-        this.startTime = System.currentTimeMillis();
-        this.elapsedTime = 0;
         this.isTimerRunning = true;
 
-        // Reset potions and other collectibles
-        this.player.smallPotion = 0;
-        this.player.mediumPotion = 0;
-        this.player.bigPotion = 0;
-        this.player.speedPotion = 0;
-        this.player.goldenBanana = 0;
 
         // Clear all coins from the level
         coins.clear();
@@ -403,6 +395,7 @@ public class Game extends JPanel implements ActionListener, KeyListener, MouseMo
 
             // Calculate the score
             if (current_level % 2 == 1) {
+                temp_player = player.duplicate();
                 player.addScoreForLevelProgress(); // Add score for progressing to the next level
             }
 
